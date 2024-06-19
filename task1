@@ -1,0 +1,306 @@
+df_house = pd.read_csv('/content/train.csv')
+df_house.head()
+df_house.shape
+df_house.info()
+df_house['GarageYrBlt'] = df_house['GarageYrBlt'].astype('object')
+df_house['YearBuilt'] = df_house['YearBuilt'].astype('str')
+df_house['YearRemodAdd'] = df_house['YearRemodAdd'].astype('str')
+df_house['MoSold'] = df_house['MoSold'].astype('str')
+df_house['YrSold'] = df_house['YrSold'].astype('str')
+df_house.drop('Id', axis=1, inplace=True)
+df_house_copy = df_house.copy()
+df_house_copy.describe()
+def missing_values(df):
+  missing_val_count_by_column = (df.isnull().sum()/df.shape[0])*100
+  return missing_val_count_by_column[missing_val_count_by_column > 0]
+  missing_values(df_house_copy)
+  plt.figure(figsize=(20, 5))
+sns.heatmap(df_house_copy.isnull(), cbar=False)
+plt.show()
+df_house_copy.drop(['Alley', 'PoolQC', 'Fence', 'MiscFeature', 'FireplaceQu'], axis=1, inplace=True)
+missing_values(df_house_copy)
+missing_value_df = missing_values(df_house_copy)
+for col in missing_value_df.index:
+  if df_house_copy[col].dtype == 'float64':
+    df_house_copy[col].fillna(df_house_copy[col].mean(), inplace=True)
+  if df_house_copy[col].dtype == 'object':
+    df_house_copy[col].fillna(st.mode(df_house_copy[col]), inplace=True)
+    missing_values(df_house_copy)
+   cat_cols = [df_house_copy.columns[i] for i in range(0, df_house_copy.shape[1])  if df_house_copy.iloc[:,i].dtype=='O']
+
+encoded = df_house_copy.loc[:,cat_cols]
+
+label_encoder = LabelEncoder()
+for col in encoded:
+    encoded[col] = label_encoder.fit_transform(encoded[col])
+    df_house_copy.drop(cat_cols, axis=1, inplace=True)
+pd.concat([df_house_copy, encoded])
+df_house_copy.head()
+def data_split(df):
+  X = df.drop('SalePrice', axis=1)
+  y = df['SalePrice']
+
+  X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1, test_size = 0.2)
+
+  return X_train, X_test, y_train, y_test
+  def data_split(df):
+  X = df.drop('SalePrice', axis=1)
+  y = df['SalePrice']
+
+  X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1, test_size = 0.2)
+
+  return X_train, X_test, y_train, y_test
+  def data_split(df):
+  X = df.drop('SalePrice', axis=1)
+  linreg = LinearRegression()
+MLR_model = linreg.fit(X_train, y_train)
+MLR_model.score(X_train, y_train)
+train_pred = MLR_model.predict(X_train)
+mse = mean_squared_error(y_train, train_pred)
+round(np.sqrt(mse), 4)
+linreg = LinearRegression()
+MLR_model = linreg.fit(X_train, y_train)
+MLR_model.score(X_test, y_test)
+train_pred = MLR_model.predict(X_train)
+mse = mean_squared_error(y_train, train_pred)
+round(np.sqrt(mse), 4)
+test_pred = MLR_model.predict(X_test)
+mse = mean_squared_error(y_test, test_pred)
+round(np.sqrt(mse), 4)
+X_train = sn.add_constant(X_train)
+X_test = sn.add_constant(X_test)
+
+X_train=X_train.values
+X_test=X_test.values
+y_train=y_train.values
+y_test=y_test.values
+
+mlr_model = sn.OLS(y_train, X_train).fit()
+print(mlr_model.summary())
+cat_cols = [df_house.columns[i] for i in range(0, df_house.shape[1])  if df_house.iloc[:,i].dtype=='O']
+fig, axes = plt.subplots(22, 2, figsize=(22,50))
+axes = [ax for axes_rows in axes for ax in axes_rows]
+
+plot_cat_cols = cat_cols.copy()
+plot_cat_cols.remove('Neighborhood')
+plot_cat_cols.remove('YearBuilt')
+plot_cat_cols.remove('YearRemodAdd')
+plot_cat_cols.remove('GarageYrBlt')
+
+for i, c in enumerate(df_house[plot_cat_cols]):
+    df_house[c].value_counts()[::-1].plot(kind='pie',
+                                          ax=axes[i],
+                                          title=c,
+                                          autopct='%.0f%%',
+                                          fontsize=10)
+    axes[i].set_ylabel('')
+    fig, axes = plt.subplots(22, 2, figsize=(18,80))
+axes = [ax for axes_rows in axes for ax in axes_rows]
+
+for i, c in enumerate(df_house[plot_cat_cols]):
+    df_house[c].value_counts()[::-1].plot(kind='barh',
+                                          ax=axes[i],
+                                          title=c,
+                                          fontsize=12)
+                                          num_cols = [c for c in df_house.columns if c not in cat_cols]
+                                          fig, axes = plt.subplots(16, 2, figsize=(20,80))
+y =0
+for i,c in enumerate(df_house[num_cols]):
+    pd.DataFrame(df_house[[c]]).boxplot(ax=axes.flatten()[i], vert=False)
+    fig, axes = plt.subplots(16, 2, figsize=(20,80))
+y =0
+for i,c in enumerate(df_house[num_cols]):
+    pd.DataFrame(df_house[[c]]).plot(kind='kde', ax=axes.flatten()[i])
+    missing_values(df_house[num_cols])
+    sns.boxplot(x = df_house['LotFrontage'])
+    df_house['LotFrontage'].fillna(df_house['LotFrontage'].median(), inplace=True)
+    sns.boxplot(x = df_house['MasVnrArea'])
+    df_house['MasVnrArea'].fillna(df_house['MasVnrArea'].median(), inplace=True)
+    df_house[num_cols].isnull().sum()
+    missing_cat = missing_values(df_house[cat_cols])
+missing_cat
+for i in missing_cat[missing_cat>0].index:
+    if i == 'MasVnrType':
+        df_house['MasVnrType'].fillna(st.mode(df_house['MasVnrType']), inplace=True)
+    if i == 'GarageYrBlt':
+        df_house['GarageYrBlt'].fillna(st.mode(df_house['GarageYrBlt']), inplace=True)
+    else:
+        df_house[i] = df_house[i].replace(np.nan, 'Na')
+df_house['GarageYrBlt'] = df_house['GarageYrBlt'].astype('str')
+df_house[cat_cols].isnull().sum()
+object_nunique = list(map(lambda col: df_house[col].nunique(), cat_cols))
+d = dict(zip(cat_cols, object_nunique))
+
+sorted(d.items(), key=lambda x: x[1])
+low_cardinality_cols = [col for col in cat_cols if df_house[col].nunique() < 10]
+high_cardinality_cols = list(set(cat_cols)-set(low_cardinality_cols))
+OH_low_cardinal = pd.DataFrame()
+
+OH_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+
+for col in low_cardinality_cols:
+    columns=[]
+    for val in df_house[col].unique():
+        name = ''+col+'_'+val
+        columns.append(name)
+    temp_df = pd.DataFrame(OH_encoder.fit_transform(df_house[[col]]), columns = columns)
+    OH_low_cardinal = pd.concat([OH_low_cardinal, temp_df], axis=1)
+
+OH_low_cardinal
+OH_high_cardinal = df_house.loc[:,high_cardinality_cols]
+
+label_encoder = LabelEncoder()
+for col in high_cardinality_cols:
+    OH_high_cardinal[col] = label_encoder.fit_transform(OH_high_cardinal[col])
+    df_house.drop(cat_cols, axis=1, inplace=True)
+df_house.head()
+# merging one hot encoded, label encoded and numerical data
+df_house = pd.concat([df_house, OH_low_cardinal], axis=1)
+df_house = pd.concat([df_house, OH_high_cardinal], axis=1)
+
+print(df_house.shape)
+df_house.head()
+min_max = MinMaxScaler()
+
+new_num_col = num_cols.copy()
+new_num_col.remove('SalePrice')
+
+for col in new_num_col:
+    df_house[[col]] = min_max.fit_transform(df_house[[col]])
+    X_train, X_test, y_train, y_test = data_split(df_house)
+print('X_train:', X_train.shape)
+print('X_test:', X_test.shape)
+print('y_train:', y_train.shape)
+print('y_test:', y_test.shape)
+def standardize(X_train, X_test):
+  scaler = StandardScaler()
+
+  X_train_scalar = scaler.fit_transform(X_train)
+  X_train = pd.DataFrame(X_train_scalar, columns = X_train.columns)
+
+  X_test_scalar = scaler.fit_transform(X_test)
+  X_test = pd.DataFrame(X_test_scalar, columns = X_test.columns)
+
+  return X_train, X_test
+  X_train, X_test = standardize(X_train, X_test)
+  linreg = LinearRegression()
+
+linreg_forward = sfs(estimator=linreg, k_features = 100, forward=True,
+                     verbose=2, scoring='r2')
+sfs_forward = linreg_forward.fit(X_train, y_train)
+linreg = LinearRegression()
+
+linreg_forward = sfs(estimator=linreg, k_features = 51, forward=True,
+                     verbose=2, scoring='r2')
+sfs_forward = linreg_forward.fit(X_train, y_train)
+sfs_forward.k_feature_names_
+X_train, X_test, y_train, y_test = data_split(df_house)
+
+X_train = X_train[list(sfs_forward.k_feature_names_)]
+X_test = X_test[list(sfs_forward.k_feature_names_)]
+
+X_train, X_test = standardize(X_train, X_test)
+
+print('X_train:', X_train.shape)
+print('X_test:', X_test.shape)
+print('y_train:', y_train.shape)
+print('y_test:', y_test.shape)
+X_train
+linreg = LinearRegression()
+MLR_model = linreg.fit(X_train, y_train)
+MLR_model.score(X_train, y_train)
+linreg = LinearRegression()
+MLR_model = linreg.fit(X_train, y_train)
+MLR_model.score(X_test, y_test)
+train_pred = MLR_model.predict(X_train)
+mse = mean_squared_error(y_train, train_pred)
+print('RMSE for train data',round(np.sqrt(mse), 4))
+
+test_pred = MLR_model.predict(X_test)
+mse = mean_squared_error(y_test, test_pred)
+print('RMSE for test data',round(np.sqrt(mse), 4))
+X_train = sn.add_constant(X_train)
+X_test = sn.add_constant(X_test)
+
+X_train=X_train.values
+X_test=X_test.values
+y_train=y_train.values
+y_test=y_test.values
+
+mlr_model = sn.OLS(y_train, X_train).fit()
+print(mlr_model.summary())
+X_train, X_test, y_train, y_test = data_split(df_house)
+
+X_train = X_train[list(sfs_forward.k_feature_names_)]
+X_test = X_test[list(sfs_forward.k_feature_names_)]
+
+X_train, X_test = standardize(X_train, X_test)
+X_train
+scores = cross_val_score(estimator = LinearRegression(), X = X_train, y = y_train, cv = 10, scoring = 'r2')
+print('All scores: ', scores)
+print("\nMinimum score obtained: ", round(min(scores), 4))
+print("Maximum score obtained: ", round(max(scores), 4))
+print("Average score obtained: ", round(np.mean(scores), 4))
+loocv_rmse = []
+
+loocv = LeaveOneOut()
+
+
+for train_index, test_index in loocv.split(X_train):
+    X_train_l, X_test_l, y_train_l, y_test_l = X_train.iloc[train_index], X_train.iloc[test_index], \
+                                               y_train.iloc[train_index], y_train.iloc[test_index]
+    
+    # instantiate the regression model
+    linreg = LinearRegression()
+    
+    # fit the model on training dataset
+    linreg.fit(X_train_l, y_train_l)
+    
+    # calculate MSE using test dataset
+    # use predict() to predict the values of target variable 
+    #pred = linreg.predict(X_train_l)
+    mse = linreg.score(X_train_l, y_train_l)
+    
+    # calculate the RMSE
+    rmse = np.sqrt(mse)
+    
+    # use append() to add each RMSE to the list 'loocv_rmse'
+    loocv_rmse.append(rmse)
+    print(min(loocv_rmse))
+print(max(loocv_rmse))
+print(np.mean(loocv_rmse))
+ridge = Ridge(alpha = 1, max_iter = 500)
+ridge.fit(X_train, y_train)
+ridge.score(X_train,y_train)
+ridge.score(X_test,y_test)
+ridge.fit(X_train, y_train)
+train_pred = ridge.predict(X_train)
+mse = mean_squared_error(y_train, train_pred)
+print('RMSE for train data',round(np.sqrt(mse), 4))
+
+y_pred = ridge.predict(X_test)
+mse=mean_squared_error(y_test,y_pred)
+print('RMSE for test data',round(np.sqrt(mse), 4))
+tuned_paramaters = [{'alpha':[1e-15, 1e-10, 1e-8, 1e-4,1e-3, 1e-2, 0.1, 1, 5, 10, 20, 40, 60, 80, 100,150,200,250]}]
+ridge = Ridge()
+ridge_grid = GridSearchCV(estimator = ridge, 
+                          param_grid = tuned_paramaters,
+                          cv = 10)
+ridge_grid.fit(X_train, y_train)
+ridge_grid.score(X_train,y_train)
+ridge_grid.score(X_test,y_test)
+ridge.fit(X_train, y_train)
+train_pred = ridge.predict(X_train)
+mse = mean_squared_error(y_train, train_pred)
+print('RMSE for train data',round(np.sqrt(mse), 4))
+
+y_pred = ridge.predict(X_test)
+mse=mean_squared_error(y_test,y_pred)
+print('RMSE for test data',round(np.sqrt(mse), 4))
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
+plt.figure(figsize=(20,10))
+img=mpimg.imread('/content/Conclusion_Table_Final.PNG')
+plt.xticks([]), plt.yticks([])
+plt.imshow(img)
